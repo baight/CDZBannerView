@@ -8,6 +8,7 @@
 
 #import "CDZBannerView.h"
 #import <QuartzCore/QuartzCore.h>
+#import "UIImageView+WebCache.h"
 
 #define OFFSET_X 7.0f
 #define SPACE_V 5.0f
