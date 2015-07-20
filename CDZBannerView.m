@@ -112,6 +112,7 @@
     
     _pageControl=[[UIPageControl alloc]initWithFrame:CGRectMake(0, self.bounds.size.height - 30, self.bounds.size.width, 20)];
     _pageControl.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
+    _pageControl.userInteractionEnabled = NO;
     [self addSubview:_pageControl];
     
     _screen0 = [[UIImageView alloc] init];
