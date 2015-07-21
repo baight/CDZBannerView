@@ -18,7 +18,6 @@
  如果 imageArray 成员若是 NSURL 类，则展示网络图片，网络图片未下载下来时，显示 属性placeholderImage图片
  如果 imageArray 成员若是 NSString 类，并且 NSString 类是以 "http://" 开头的，将该NSString视为一个有效网络图片链接，同上。
  如果 imageArray 成员若是 NSString 类，并且 NSString 类是不是以 "http" 开头的，则将NSString视为一个有效本地图片名称，进行显示
- imageArray 中至少应该有一张图片，否则显示不正常
  
  属性 placeholderImage 是当网络图片未下载下来时，所显示的图片。
  
@@ -39,10 +38,10 @@
 
 @property (nonatomic, weak) IBOutlet id delegate;
 
-@property (nonatomic, retain) NSArray* imageArray;                  // 要显示的图片信息数组
-@property (nonatomic, retain) UIImage* placeholderImage;            // 网络图片未下载下来时，显示该本地图片。该属性有默认值，可不设置
-@property (nonatomic, assign) NSTimeInterval timeInterval;         // 图片滚动间隔
-@property (nonatomic, assign) NSInteger currentPage;             // 当前显示第几页,从 0 开始计算
+@property (nonatomic, retain) NSArray* imageArray;            // 要显示的图片信息数组
+@property (nonatomic, retain) UIImage* placeholderImage;      // 网络图片未下载下来时，显示该本地图片
+@property (nonatomic, assign) NSTimeInterval timeInterval;    // 图片自动滚动间隔，默认为0，不自动滚动
+@property (nonatomic, assign) NSInteger currentPage;          // 当前显示第几页,从 0 开始计算
 
 @property (nonatomic, assign) BOOL canClickImage;
 @property (nonatomic, assign) BOOL canCycleScroll;
