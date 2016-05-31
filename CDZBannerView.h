@@ -11,6 +11,8 @@
 // enormously modified by zhengchen2 2013-12-27
 /*
  
+ 该控件需要第三方库SDWebImage(https://github.com/rs/SDWebImage)
+ 
  BannerView 是一个 可以实现若干张图片图片循环滚动的控件
  BannerView 中某张图片被点击时，如果canClickImage属性为YES，则会向 委托 发送 bannerViewDidClicked: 消息，参数为图片索引
  
@@ -21,6 +23,7 @@
  
  属性 placeholderImage 是当网络图片未下载下来时，所显示的图片。
  
+ 
  */
 
 
@@ -30,16 +33,17 @@
     
     UITapGestureRecognizer *_tapGestureRecognizer;
 }
-@property (nonatomic, retain, readonly) UIImageView* screen0;  // 第一屏
-@property (nonatomic, retain, readonly) UIImageView* screen1;  // 第二屏
-@property (nonatomic, retain, readonly) UIImageView* screen2;  // 第三屏
+@property (nonatomic, strong, readonly) UIImageView* screen0;  // 第一屏
+@property (nonatomic, strong, readonly) UIImageView* screen1;  // 第二屏
+@property (nonatomic, strong, readonly) UIImageView* screen2;  // 第三屏
 
 @property (nonatomic, strong, readonly) UIPageControl* pageControl;
 
-@property (nonatomic, assign) IBOutlet id delegate;
+@property (nonatomic, weak) IBOutlet id delegate;
 
-@property (nonatomic, retain) NSArray* imageArray;            // 要显示的图片信息数组
-@property (nonatomic, retain) UIImage* placeholderImage;      // 网络图片未下载下来时，显示该本地图片
+@property (nonatomic, strong) NSArray* imageArray;            // 要显示的图片信息数组
+@property (nonatomic, strong) UIImage* placeholderImage;      // 初始图片
+@property (nonatomic, strong) UIImage* failureImage;          // 网络图片未下载下来时，显示该图片
 @property (nonatomic, assign) NSTimeInterval timeInterval;    // 图片自动滚动间隔，默认为0，不自动滚动
 @property (nonatomic, assign) NSInteger currentPage;          // 当前显示第几页,从 0 开始计算
 

@@ -2,7 +2,7 @@
 //  CDZBannerView.m
 //
 //
-//  Created by cui baight on 13-5-29.
+//  Created by baight on 13-5-29.
 //  Copyright (c) 2013年 baight. All rights reserved.
 //
 
@@ -133,244 +133,6 @@
     _screen2.tag=2;
     [_scrollView addSubview:_screen2];
 }
--(void)setCanClickImage:(BOOL)canClickImage{
-    _canClickImage = canClickImage;
-    if(_canClickImage){
-        if(_tapGestureRecognizer == nil){
-            UITapGestureRecognizer *tapGestureRecognize = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(singleTapGestureRecognizerForDatailClick:)];
-            tapGestureRecognize.delegate = self;
-            tapGestureRecognize.numberOfTapsRequired = 1;
-            tapGestureRecognize.numberOfTouchesRequired = 1;
-            _tapGestureRecognizer = tapGestureRecognize;
-        }
-        [self addGestureRecognizer:_tapGestureRecognizer];
-    }
-    else{
-        if(_tapGestureRecognizer){
-            [self removeGestureRecognizer:_tapGestureRecognizer];
-        }
-    }
-}
-
-
--(void)setContentMode:(UIViewContentMode)contentMode{
-    _screen0.contentMode = contentMode;
-    _screen1.contentMode = contentMode;
-    _screen2.contentMode = contentMode;
-}
--(UIViewContentMode)contentMode{
-    return _screen1.contentMode;
-}
-
--(void)setImageArray:(NSArray *)imageArray{
-    [self setImageArray:imageArray initPage:0];
-}
--(void)setImageArray:(NSArray *)imageArray initPage:(NSInteger)initPage{
-    _imageArray = imageArray;
-    _currentPage = initPage;
-    
-    [self updateData];
-}
--(void)setCurrentPage:(NSInteger)currentPage{
-    if(_currentPage == currentPage){
-        return;
-    }
-    if(currentPage >= _imageArray.count){
-        currentPage = _imageArray.count - 1;
-    }
-    _currentPage = currentPage;
-    [self update3Screens];
-    
-    _pageControl.currentPage = currentPage;
-}
--(void)setPlaceholderImage:(UIImage *)placeholderImage{
-    _placeholderImage = placeholderImage;
-    
-    if(_screen0.image == nil){
-        _screen0.image = placeholderImage;
-    }
-    if(_screen1.image == nil){
-        _screen1.image = placeholderImage;
-    }
-    if(_screen2.image == nil){
-        _screen2.image = placeholderImage;
-    }
-}
--(void)setTimeInterval:(NSTimeInterval)timeInterval{
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(switchToNextPage) object:nil];
-    _timeInterval = timeInterval;
-    if(_timeInterval > 0){
-        [self performSelector:@selector(switchToNextPage) withObject:nil afterDelay:_timeInterval];
-    }
-}
-
-// 根据 _imageArray 更新 _pageControl 的宽度和页数，开启自动循环滚动
-- (void)updateData{
-    _pageControl.numberOfPages = _imageArray.count;
-    _pageControl.currentPage = _currentPage;
-    
-    [self update3Screens];   // 更新三屏数据
-    // 显示第二屏数据
-    if(_canCycleScroll){
-        [_scrollView setContentOffset:CGPointMake(_scrollView.frame.size.width, 0) animated:NO];
-    }
-    else{
-        if(_currentPage == 0){
-            [_scrollView setContentOffset:CGPointMake(0, 0) animated:NO];
-        }
-        else if(_currentPage == _imageArray.count-1){
-            [_scrollView setContentOffset:CGPointMake(_scrollView.frame.size.width*2, 0) animated:NO];
-        }
-        else{
-            [_scrollView setContentOffset:CGPointMake(_scrollView.frame.size.width, 0) animated:NO];
-        }
-    }
-    
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(switchToNextPage) object:nil];
-    if(_imageArray.count < 1){
-        _scrollView.userInteractionEnabled = NO;
-        _scrollView.scrollEnabled = NO;
-        _pageControl.hidden = YES;
-    }
-    else if(_imageArray.count == 1){
-        _scrollView.userInteractionEnabled = YES;
-        _scrollView.scrollEnabled = NO;
-        _pageControl.hidden = YES;
-    }
-    else{
-        _scrollView.userInteractionEnabled = YES;
-        _scrollView.scrollEnabled = YES;
-        _pageControl.hidden = NO;
-        if(_timeInterval > 0){
-            [self performSelector:@selector(switchToNextPage) withObject:nil afterDelay:_timeInterval];
-        }
-    }
-}
-
-// 根据 _currentPage 来更新三屏的数据
--(void)update3Screens{
-    if(_imageArray.count <= 0){
-        _screen0.image = _placeholderImage;
-        _screen1.image = _placeholderImage;
-        _screen2.image = _placeholderImage;
-    }
-    else{
-        [self updateScreen0];
-        [self updateScreen1];
-        [self updateScreen2];
-    }
-}
-
--(void)updateScreen0{
-    id info;
-    if(_currentPage == 0){
-        if(_canCycleScroll){
-            info = [_imageArray objectAtIndex:_imageArray.count-1];
-        }
-        else{
-            info = [_imageArray objectAtIndex:0];
-        }
-    }
-    else if(_currentPage == _imageArray.count-1){
-        if(_canCycleScroll){
-            info = [_imageArray objectAtIndex:_currentPage-1];
-        }
-        else{
-            if(_imageArray.count >= 3){
-                info = [_imageArray objectAtIndex:_imageArray.count-3];
-            }
-            else{
-                info = [_imageArray firstObject];
-            }
-        }
-    }
-    else{
-        info = [_imageArray objectAtIndex:_currentPage-1];
-    }
-    
-    [self updateScreen:_screen0 urlOrString:info];
-}
--(void)updateScreen1{
-    id info;
-    if(_canCycleScroll){
-        info = [_imageArray objectAtIndex:_currentPage];
-    }
-    else{
-        if(_currentPage == 0){
-            if(_imageArray.count >= 2){
-                info = [_imageArray objectAtIndex:1];
-            }
-            else{
-                info = [_imageArray firstObject];
-            }
-        }
-        else if(_currentPage == _imageArray.count-1){
-            if(_imageArray.count >= 2){
-                info = [_imageArray objectAtIndex:_imageArray.count-2];
-            }
-            else{
-                info = [_imageArray lastObject];
-            }
-        }
-        else{
-            info = [_imageArray objectAtIndex:_currentPage];
-        }
-    }
-    
-    [self updateScreen:_screen1 urlOrString:info];
-}
--(void)updateScreen2{
-    id info;
-    if(_currentPage == 0){
-        if(_canCycleScroll){
-            if(_imageArray.count >= 2){
-                info = [_imageArray objectAtIndex:1];
-            }
-            else{
-                info = [_imageArray firstObject];
-            }
-        }
-        else{
-            if(_imageArray.count >= 3){
-                info = [_imageArray objectAtIndex:2];
-            }
-            else{
-                info = [_imageArray lastObject];
-            }
-        }
-    }
-    else if(_currentPage == _imageArray.count-1){    // 当前页为最后一页，所以第三屏数据应该为第一页数据
-        if(_canCycleScroll){
-            info = [_imageArray objectAtIndex:0];
-        }
-        else{
-            info = [_imageArray objectAtIndex:_imageArray.count-1];
-        }
-    }
-    else{
-        info = [_imageArray objectAtIndex:_currentPage+1];
-    }
-    [self updateScreen:_screen2 urlOrString:info];
-}
--(void)updateScreen:(UIImageView*)screen urlOrString:(id)urlOrString{
-    if([urlOrString isKindOfClass:[NSURL class]]){   // 如果是 NSURL 类，则展示网络图片，网络图片未下载下来时，显示 属性placeholderImage图片
-        [screen sd_setImageWithURL:urlOrString placeholderImage:_placeholderImage];
-    }
-    else if([urlOrString isKindOfClass:[NSString class]]){
-        NSString* str = urlOrString;
-        if ([str hasPrefix:@"http"]){     // 若是 NSString 类，并且 NSString 类是以 "http://" 开头的，将该NSString视为一个有效网络图片链接，如上。
-            [screen sd_setImageWithURL:[NSURL URLWithString:str] placeholderImage:_placeholderImage];
-        }
-        else{                                // 若是 NSString 类，并且 NSString 类是不是以 "http://" 开头的，则将NSString视为一个有效本地图片名字，进行显示
-            if(str.length > 0){
-                [screen setImage:[UIImage imageNamed:str]];
-            }
-            else{
-                [screen setImage:_placeholderImage];
-            }
-        }
-    }
-}
 
 // 跳转到下一页数据
 -(void)switchToNextPage{
@@ -432,16 +194,6 @@
     }
 }
 
-- (void)singleTapGestureRecognizerForDatailClick:(UIGestureRecognizer*)gestureRecognizer
-{
-    if (_currentPage > -1 && _currentPage < _imageArray.count) {
-        if ([self.delegate respondsToSelector:@selector(bannerView:clickIndex:)]) {
-            [self.delegate bannerView:self clickIndex:_currentPage];
-        }
-    }
-}
-
-
 -(void)setBounds:(CGRect)bounds{
     [super setBounds:bounds];
     _scrollView.frame = CGRectMake(0, 0, bounds.size.width, bounds.size.height);
@@ -463,6 +215,25 @@
     [self updateData];
 }
 
+- (void)didMoveToWindow {
+    if (self.window) {
+        if(_timeInterval > 0){
+            [self performSelector:@selector(switchToNextPage) withObject:nil afterDelay:_timeInterval];
+        }
+    }
+    else {
+        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(switchToNextPage) object:nil];
+    }
+}
+
+#pragma mark - Event Response
+- (void)singleTapGestureRecognizerForDatailClick:(UIGestureRecognizer*)gestureRecognizer{
+    if (_currentPage > -1 && _currentPage < _imageArray.count) {
+        if ([self.delegate respondsToSelector:@selector(bannerView:clickIndex:)]) {
+            [self.delegate bannerView:self clickIndex:_currentPage];
+        }
+    }
+}
 
 #pragma mark - UIScrollViewDelegate
 // 动画停止
@@ -619,5 +390,273 @@
     }
     _pageControl.currentPage = page;
 }//*/
+
+#pragma mark - Private Method
+// 根据 _imageArray 更新 _pageControl 的宽度和页数，开启自动循环滚动
+- (void)updateData{
+    _pageControl.numberOfPages = _imageArray.count;
+    _pageControl.currentPage = _currentPage;
+    
+    [self update3Screens];   // 更新三屏数据
+    // 显示第二屏数据
+    if(_canCycleScroll){
+        [_scrollView setContentOffset:CGPointMake(_scrollView.frame.size.width, 0) animated:NO];
+    }
+    else{
+        if(_currentPage == 0){
+            [_scrollView setContentOffset:CGPointMake(0, 0) animated:NO];
+        }
+        else if(_currentPage == _imageArray.count-1){
+            [_scrollView setContentOffset:CGPointMake(_scrollView.frame.size.width*2, 0) animated:NO];
+        }
+        else{
+            [_scrollView setContentOffset:CGPointMake(_scrollView.frame.size.width, 0) animated:NO];
+        }
+    }
+    
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(switchToNextPage) object:nil];
+    if(_imageArray.count < 1){
+        _scrollView.userInteractionEnabled = NO;
+        _scrollView.scrollEnabled = NO;
+        _pageControl.hidden = YES;
+    }
+    else if(_imageArray.count == 1){
+        _scrollView.userInteractionEnabled = YES;
+        _scrollView.scrollEnabled = NO;
+        _pageControl.hidden = YES;
+    }
+    else{
+        _scrollView.userInteractionEnabled = YES;
+        _scrollView.scrollEnabled = YES;
+        _pageControl.hidden = NO;
+        if(_timeInterval > 0){
+            [self performSelector:@selector(switchToNextPage) withObject:nil afterDelay:_timeInterval];
+        }
+    }
+}
+// 根据 _currentPage 来更新三屏的数据
+-(void)update3Screens{
+    if(_imageArray.count <= 0){
+        _screen0.image = _placeholderImage;
+        _screen1.image = _placeholderImage;
+        _screen2.image = _placeholderImage;
+    }
+    else{
+        [self updateScreen0];
+        [self updateScreen1];
+        [self updateScreen2];
+    }
+}
+
+-(void)updateScreen0{
+    id info;
+    if(_currentPage == 0){
+        if(_canCycleScroll){
+            info = [_imageArray objectAtIndex:_imageArray.count-1];
+        }
+        else{
+            info = [_imageArray objectAtIndex:0];
+        }
+    }
+    else if(_currentPage == _imageArray.count-1){
+        if(_canCycleScroll){
+            info = [_imageArray objectAtIndex:_currentPage-1];
+        }
+        else{
+            if(_imageArray.count >= 3){
+                info = [_imageArray objectAtIndex:_imageArray.count-3];
+            }
+            else{
+                info = [_imageArray firstObject];
+            }
+        }
+    }
+    else{
+        info = [_imageArray objectAtIndex:_currentPage-1];
+    }
+    
+    [self updateScreen:_screen0 urlOrString:info];
+}
+-(void)updateScreen1{
+    id info;
+    if(_canCycleScroll){
+        info = [_imageArray objectAtIndex:_currentPage];
+    }
+    else{
+        if(_currentPage == 0){
+            if(_imageArray.count >= 2){
+                info = [_imageArray objectAtIndex:1];
+            }
+            else{
+                info = [_imageArray firstObject];
+            }
+        }
+        else if(_currentPage == _imageArray.count-1){
+            if(_imageArray.count >= 2){
+                info = [_imageArray objectAtIndex:_imageArray.count-2];
+            }
+            else{
+                info = [_imageArray lastObject];
+            }
+        }
+        else{
+            info = [_imageArray objectAtIndex:_currentPage];
+        }
+    }
+    
+    [self updateScreen:_screen1 urlOrString:info];
+}
+-(void)updateScreen2{
+    id info;
+    if(_currentPage == 0){
+        if(_canCycleScroll){
+            if(_imageArray.count >= 2){
+                info = [_imageArray objectAtIndex:1];
+            }
+            else{
+                info = [_imageArray firstObject];
+            }
+        }
+        else{
+            if(_imageArray.count >= 3){
+                info = [_imageArray objectAtIndex:2];
+            }
+            else{
+                info = [_imageArray lastObject];
+            }
+        }
+    }
+    else if(_currentPage == _imageArray.count-1){    // 当前页为最后一页，所以第三屏数据应该为第一页数据
+        if(_canCycleScroll){
+            info = [_imageArray objectAtIndex:0];
+        }
+        else{
+            info = [_imageArray objectAtIndex:_imageArray.count-1];
+        }
+    }
+    else{
+        info = [_imageArray objectAtIndex:_currentPage+1];
+    }
+    [self updateScreen:_screen2 urlOrString:info];
+}
+-(void)updateScreen:(UIImageView*)screen urlOrString:(id)urlOrString{
+    
+    if([urlOrString isKindOfClass:[NSURL class]]){   // 如果是 NSURL 类，则展示网络图片，网络图片未下载下来时，显示 属性placeholderImage图片
+        [self imageView:screen setImageWithUrl:urlOrString placeholderImage:_placeholderImage failureImage:_failureImage];
+    }
+    else if([urlOrString isKindOfClass:[NSString class]]){
+        NSString* str = urlOrString;
+        // 若是 NSString 类，并且 NSString 类是以 "http://" 开头的，将该NSString视为一个有效网络图片链接，如上。
+        if ([str hasPrefix:@"http"]){
+            [self imageView:screen setImageWithUrl:[NSURL URLWithString:str] placeholderImage:_placeholderImage failureImage:_failureImage];
+        }
+        // 若是 NSString 类，并且 NSString 类是不是以 "http://" 开头的，则将NSString视为一个有效本地图片名字，进行显示
+        else{
+            if(str.length > 0){
+                [screen setImage:[UIImage imageNamed:str]];
+            }
+            else{
+                [screen setImage:_placeholderImage];
+            }
+        }
+    }
+}
+- (void)imageView:(UIImageView*)imageView setImageWithUrl:(NSURL*)imageUrl placeholderImage:(UIImage*)placeholderImage failureImage:(UIImage*)failureImage{
+    if (failureImage == nil) {
+        failureImage = placeholderImage;
+    }
+    if (imageUrl) {
+        if (placeholderImage) {
+            [imageView setImage:placeholderImage];
+        }
+        __weak UIImageView* wself = imageView;
+        [[SDWebImageManager sharedManager] downloadImageWithURL:imageUrl options:0 progress:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
+            if (!wself) return;
+            dispatch_main_sync_safe(^{
+                __strong UIImageView *sself = wself;
+                if (!sself) return;
+                if (image) {
+                    [sself setImage:image];
+                }
+                else {
+                    [sself setImage:failureImage];
+                }
+            });
+        }];
+    } else {
+        [imageView setImage:failureImage];
+    }
+}
+
+#pragma mark - Getter And Setter
+-(void)setCanClickImage:(BOOL)canClickImage{
+    _canClickImage = canClickImage;
+    if(_canClickImage){
+        if(_tapGestureRecognizer == nil){
+            UITapGestureRecognizer *tapGestureRecognize = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(singleTapGestureRecognizerForDatailClick:)];
+            tapGestureRecognize.delegate = self;
+            tapGestureRecognize.numberOfTapsRequired = 1;
+            tapGestureRecognize.numberOfTouchesRequired = 1;
+            _tapGestureRecognizer = tapGestureRecognize;
+        }
+        [self addGestureRecognizer:_tapGestureRecognizer];
+    }
+    else{
+        if(_tapGestureRecognizer){
+            [self removeGestureRecognizer:_tapGestureRecognizer];
+        }
+    }
+}
+
+-(void)setContentMode:(UIViewContentMode)contentMode{
+    _screen0.contentMode = contentMode;
+    _screen1.contentMode = contentMode;
+    _screen2.contentMode = contentMode;
+}
+-(UIViewContentMode)contentMode{
+    return _screen1.contentMode;
+}
+
+-(void)setImageArray:(NSArray *)imageArray{
+    [self setImageArray:imageArray initPage:0];
+}
+-(void)setImageArray:(NSArray *)imageArray initPage:(NSInteger)initPage{
+    _imageArray = imageArray;
+    _currentPage = initPage;
+    
+    [self updateData];
+}
+-(void)setCurrentPage:(NSInteger)currentPage{
+    if(_currentPage == currentPage){
+        return;
+    }
+    if(currentPage >= _imageArray.count){
+        currentPage = _imageArray.count - 1;
+    }
+    _currentPage = currentPage;
+    [self update3Screens];
+    
+    _pageControl.currentPage = currentPage;
+}
+-(void)setPlaceholderImage:(UIImage *)placeholderImage{
+    _placeholderImage = placeholderImage;
+    
+    if(_screen0.image == nil){
+        _screen0.image = placeholderImage;
+    }
+    if(_screen1.image == nil){
+        _screen1.image = placeholderImage;
+    }
+    if(_screen2.image == nil){
+        _screen2.image = placeholderImage;
+    }
+}
+-(void)setTimeInterval:(NSTimeInterval)timeInterval{
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(switchToNextPage) object:nil];
+    _timeInterval = timeInterval;
+    if(_timeInterval > 0){
+        [self performSelector:@selector(switchToNextPage) withObject:nil afterDelay:_timeInterval];
+    }
+}
 
 @end
